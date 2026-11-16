@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Family Hub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#F4F7F6;--card:#fff;--ink:#14211F;--mut:#64787A;--pri:#0F766E;--pri2:#0B5F59;--on:#fff;--acc:#E3A53B;--soft:#E6F1EF;--line:#E1EAE8;--bad:#C2410C;--ok:#15803D;--sh:0 1px 2px #0b2a2a0f,0 10px 26px -14px #0b2a2a33}
+:root[data-t=dark]{--bg:#0D1516;--card:#152123;--ink:#E8F1EF;--mut:#8FA7AA;--pri:#2DD4BF;--pri2:#5EEAD4;--on:#04302D;--soft:#1C2E30;--line:#243A3D;--bad:#FB923C;--ok:#4ADE80;--sh:0 10px 26px -14px #000a}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:radial-gradient(900px 320px at 50% -100px,var(--soft),transparent),var(--bg);background-attachment:fixed;color:var(--ink);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+.ic{width:1.2em;height:1.2em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.22em}
+.hide{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.auth{max-width:420px;margin:0 auto;padding:40px 18px}
+.brand{font-weight:800;font-size:1.7rem;color:var(--pri);letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:var(--on);display:grid;place-items:center;font-size:1.25rem;flex:none}
+.sub{color:var(--mut);font-weight:500;margin-top:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:14px;box-shadow:var(--sh)}
+.tabs{display:flex;background:var(--soft);border-radius:14px;padding:4px;margin:20px 0 4px}
+.tabs button{flex:1;border:0;background:none;padding:10px 4px;border-radius:11px;font-weight:700;font-size:.9rem;color:var(--mut);cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--pri);box-shadow:0 1px 4px #0002}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--mut);margin:14px 0 5px}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);font-weight:500}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 22%,transparent)}
+button:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.btn{width:100%;margin-top:16px;padding:13px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:var(--on);font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px -10px var(--pri)}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.6}
+.ghost{background:var(--card);border:1.5px solid var(--line);color:var(--ink);width:auto;margin:0;padding:9px 13px;border-radius:12px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+.err{color:var(--bad);font-weight:700;font-size:.9rem;margin-top:10px;min-height:1.2em}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 4px}
+h3{font-size:1rem;margin-bottom:8px;display:flex;align-items:center;gap:8px}h3 .ic{color:var(--pri)}
+.hello{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.mut{color:var(--mut);font-size:.88rem}
+.note{margin-top:10px;display:flex;gap:7px;align-items:center}
+.code{font-size:1.5rem;font-weight:800;letter-spacing:.18em;color:var(--pri);background:var(--soft);padding:10px 16px;border-radius:14px;display:inline-block;margin:8px 0;user-select:all}
+.pill{display:inline-block;padding:4px 11px;border-radius:99px;font-size:.76rem;font-weight:800;background:var(--soft);color:var(--pri)}
+.pill.wait{background:#F59E0B26;color:#B45309}
+:root[data-t=dark] .pill.wait{color:#FBBF24}
+.row{display:flex;gap:8px}.row>*{flex:1}.row .btn{margin-top:0;width:auto}
+.item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .t{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.item.done .t b{text-decoration:line-through;color:var(--mut)}
+.ib{width:38px;height:38px;border-radius:12px;background:var(--soft);color:var(--pri);display:grid;place-items:center;flex:none}
+.x{border:0;background:var(--soft);color:var(--pri);width:36px;height:36px;border-radius:11px;display:grid;place-items:center;cursor:pointer;flex:none}
+.x.bad{color:var(--bad)}
+input[type=checkbox]{appearance:none;-webkit-appearance:none;width:24px;height:24px;padding:0;margin-top:2px;border:2px solid var(--line);border-radius:8px;background:var(--bg);display:grid;place-content:center;cursor:pointer;flex:none}
+input[type=checkbox]:checked{background:var(--pri);border-color:var(--pri)}
+input[type=checkbox]:checked::after{content:"";width:10px;height:5px;border:2.5px solid var(--on);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.req{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;padding:9px 11px;border-radius:13px;background:#F59E0B22;font-size:.82rem;font-weight:600}
+.req .ic{color:#D97706}.req span{flex:1 1 150px}
+.mini{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:5px 11px;font-weight:700;font-size:.8rem;cursor:pointer}
+.mini.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.empty{color:var(--mut);padding:10px 0;font-size:.92rem}
+.grid{display:grid;gap:0 14px}
+@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:700;z-index:9;max-width:90%;text-align:center}
+.load{display:grid;place-items:center;min-height:60vh;color:var(--mut);font-weight:700}
+dialog{border:1px solid var(--line);border-radius:22px;background:var(--card);color:var(--ink);padding:22px;max-width:350px;box-shadow:var(--sh)}
+dialog::backdrop{background:#0009;backdrop-filter:blur(3px)}
+#nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:5;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:24px;padding:6px;box-shadow:var(--sh)}
+#nav button{flex:none;min-width:66px;border:0;background:none;border-radius:18px;padding:8px 6px;font-size:.66rem;font-weight:700;color:var(--mut);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+#nav button .ic{font-size:1.3rem}#nav button.on{background:var(--pri);color:var(--on)}
+#app{padding-bottom:110px}
+@media(min-width:900px){#nav{top:0;left:0;bottom:0;right:auto;width:210px;flex-direction:column;border-width:0 1px 0 0;border-radius:0;padding:18px 10px;overflow-y:auto;background:var(--card)}#nav button{flex-direction:row;font-size:.9rem;gap:10px;padding:11px 12px;min-width:0;justify-content:flex-start;border-radius:14px}#app{margin-left:210px;padding-bottom:16px;max-width:none}#app>*{max-width:760px;margin-left:auto;margin-right:auto}#toast{bottom:24px}}
+#fd{max-width:440px;width:92%}
+.bar{height:8px;border-radius:9px;background:var(--pri);margin:4px 0 10px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10M10 20v-6h4v6"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol><symbol id="i-tasks" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12l3 3 5-6"/></symbol><symbol id="i-utensils" viewBox="0 0 24 24"><path d="M7 3v8M4 3v5a3 3 0 006 0V3M7 11v10M17 21V3c-2.5 1.5-4 4-4 8h4"/></symbol><symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 7H6.5"/><circle cx="9" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h13v4M3 7v11a2 2 0 002 2h15V9H5a2 2 0 01-2-2z"/><circle cx="16" cy="14.5" r="1.2"/></symbol><symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9.5h.01M15 9.5h.01"/></symbol><symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v9h14v-9M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 010 5"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 001 1h2l7 4V6L6 10H4a1 1 0 00-1 1zM16.5 9a4 4 0 010 6"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6"/></symbol><symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol><symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 004 0"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v4.5M12 18h.01"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.6a3.5 3.5 0 010 6.8M18 14a6 6 0 013.5 6"/></symbol><symbol id="i-tree" viewBox="0 0 24 24"><path d="M12 21v-7M12 14c-4 0-7-3-7-7 4 0 7 3 7 7zM12 14c4 0 7-3 7-7-4 0-7 3-7 7z"/></symbol></defs></svg>
+
+<div id="loading" class="load">Inapakia…</div>
+
+<!-- AUTH -->
+<main id="auth" class="auth hide">
+  <div class="brand"><span class="logo"><svg class="ic"><use href="#i-tree"/></svg></span>Family Hub</div><div class="sub">Nyumba moja, mipango yenu wawili.</div>
+  <div class="tabs" role="tablist">
+    <button id="tLogin" class="on" type="button">Ingia</button>
+    <button id="tNew" type="button">Familia mpya</button>
+    <button id="tJoin" type="button">Nina code</button>
+  </div>
+  <form id="authForm" class="card" autocomplete="on">
+    <div id="fName" class="hide"><label for="name">Jina kamili</label><input id="name" autocomplete="name"></div>
+    <div id="fPhone" class="hide"><label for="phone">Namba ya simu</label><input id="phone" type="tel" autocomplete="tel"></div>
+    <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+    <label for="pass">Password (angalau herufi 6)</label><input id="pass" type="password" autocomplete="current-password" required minlength="6">
+    <div id="fRole" class="hide"><label for="role">Nafasi yako</label>
+      <select id="role"><option value="mume">MUME</option><option value="mke">MKE</option></select></div>
+    <div id="fFam" class="hide"><label for="famName">Jina la familia</label><input id="famName" placeholder="Mfano: Familia ya Mushi"></div>
+    <div id="fCode" class="hide"><label for="code">Family Invitation Code</label><input id="code" maxlength="8" style="text-transform:uppercase;letter-spacing:.15em"></div>
+    <div id="err" class="err" role="alert"></div>
+    <button id="go" class="btn" type="submit">Ingia</button>
+  </form>
+  <p class="mut" style="margin-top:14px"><a href="#" id="forgot" style="color:var(--pri)">Nimesahau password</a></p>
+</main>
+
+<!-- APP -->
+<main id="app" class="wrap hide">
+  <header>
+    <div class="brand" style="font-size:1.25rem" id="famTitle">Family Hub</div>
+    <div class="row" style="flex:none">
+      <button class="ghost" id="theme" type="button" aria-label="Badilisha mwonekano"><svg class="ic"><use href="#i-moon"/></svg></button>
+      <button class="ghost" id="logout" type="button"><svg class="ic"><use href="#i-logout"/></svg>Toka</button>
+    </div>
+  </header>
+  <div class="hello" id="hello"></div>
+  <div class="mut" id="clock"></div>
+
+  <section id="inviteBox" class="card hide">
+    <h3><svg class="ic"><use href="#i-users"/></svg>Mwalike mwenza wako</h3>
+    <div class="mut">Mpe mwenza wako code hii ajisajili kwenye "Nina code". Inatumika mara moja tu.</div>
+    <div class="code" id="inviteCode"></div>
+    <div><button class="ghost" id="copy" type="button"><svg class="ic"><use href="#i-copy"/></svg>Nakili code</button></div>
+  </section>
+
+  <section id="switchBox" class="card hide">
+    <h3>Mwenza wako ameshafungua familia?</h3>
+    <div class="mut">Kama ninyi wawili mlisajili kila mmoja familia yake, andika hapa code ya mwenza wako ili muwe familia moja. Familia yako ya sasa (tupu) itaachwa.</div>
+    <form id="switchForm" class="row" style="margin-top:10px">
+      <input id="switchCode" maxlength="8" placeholder="CODE" required style="text-transform:uppercase;letter-spacing:.15em">
+      <button class="btn" type="submit">Hamia</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h3><svg class="ic"><use href="#i-users"/></svg>Wanafamilia</h3>
+    <div id="members"></div>
+  </section>
+
+  <div id="shell"><nav id="nav"></nav><div id="view"></div></div>
+</main>
+
+<dialog id="dlg"><p id="dlgMsg" style="font-weight:700"></p>
+  <div class="row" style="margin-top:16px"><button class="ghost" id="dNo" type="button">Hapana</button><button class="btn" id="dYes" type="button">Ndiyo</button></div>
+</dialog>
+<dialog id="fd"><form id="ff"></form></dialog>
+<div id="toast" class="hide"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail}
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,limit,
+  serverTimestamp,runTransaction,writeBatch,arrayUnion} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== WEKA FIREBASE CONFIG YAKO HAPA ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCF3NcUqw0fxh14iew-zYXDwp3aoomo8Ag",
+  authDomain: "sadetrade-6cce2.firebaseapp.com",
+  projectId: "sadetrade-6cce2",
+  storageBucket: "sadetrade-6cce2.firebasestorage.app",
+  messagingSenderId: "7070568393",
+  appId: "1:7070568393:web:89443b14b08f1f36c3e218",
+  measurementId: "G-8KW59X2V2J"
+};
+/* ============================================ */
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+let mode = "login", me = null, fam = null, unsubs = [], busy = false;
+
+const errs = {
+  "auth/email-already-in-use":"Email hii tayari imesajiliwa. Tumia \"Ingia\".",
+  "auth/invalid-credential":"Email au password si sahihi.",
+  "auth/wrong-password":"Email au password si sahihi.",
+  "auth/user-not-found":"Email au password si sahihi.",
+  "auth/weak-password":"Password iwe na angalau herufi 6.",
+  "auth/invalid-email":"Email haijaandikwa vizuri.",
+  "auth/network-request-failed":"Hakuna mtandao. Angalia intaneti kisha jaribu tena.",
+  "auth/too-many-requests":"Majaribio mengi. Subiri kidogo kisha jaribu tena.",
+  "permission-denied":"Huna ruhusa ya kufanya hili. Angalia code au Security Rules."
+};
+const msg = e => e.userMessage || errs[e.code] || ("Kuna tatizo: " + (e.message || e));
+function toast(t){const el=$("toast");el.textContent=t;el.classList.remove("hide");clearTimeout(toast.h);toast.h=setTimeout(()=>el.classList.add("hide"),2600)}
+function confirmDlg(t){return new Promise(r=>{$("dlgMsg").textContent=t;const d=$("dlg");d.showModal();
+  $("dYes").onclick=()=>{d.close();r(true)};$("dNo").onclick=()=>{d.close();r(false)};d.oncancel=()=>r(false)})}
+const ic=(n,c="")=>`<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const roleName = r => r==="mume" ? "MUME" : "MKE";
+const fail = m => {const e=new Error(m);e.userMessage=m;return e};
+
+/* ---------- Theme ---------- */
+const root = document.documentElement;
+root.dataset.t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+$("theme").onclick = () => root.dataset.t = root.dataset.t==="dark" ? "light" : "dark";
+
+/* ---------- Auth UI ---------- */
+function setMode(m){
+  mode = m; $("err").textContent = "";
+  ["tLogin","tNew","tJoin"].forEach(id=>$(id).classList.remove("on"));
+  $({login:"tLogin",new:"tNew",join:"tJoin"}[m]).classList.add("on");
+  const reg = m!=="login";
+  ["fName","fPhone","fRole"].forEach(id=>$(id).classList.toggle("hide",!reg));
+  $("fFam").classList.toggle("hide",m!=="new");
+  $("fCode").classList.toggle("hide",m!=="join");
+  $("name").required=$("phone").required=reg; $("famName").required=m==="new"; $("code").required=m==="join";
+  $("pass").autocomplete = reg ? "new-password" : "current-password";
+  $("go").textContent = {login:"Ingia",new:"Fungua familia",join:"Jiunge na familia"}[m];
+}
+$("tLogin").onclick=()=>setMode("login"); $("tNew").onclick=()=>setMode("new"); $("tJoin").onclick=()=>setMode("join");
+
+$("forgot").onclick = async e => {
+  e.preventDefault();
+  const em = $("email").value.trim();
+  if(!em){$("err").textContent="Andika email yako kwanza.";return}
+  try{await sendPasswordResetEmail(auth,em);toast("Link ya kubadilisha password imetumwa.")}catch(x){$("err").textContent=msg(x)}
+};
+
+const genCode = () => {const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=crypto.getRandomValues(new Uint8Array(8));return [...b].map(x=>a[x%a.length]).join("")};
+
+$("authForm").onsubmit = async e => {
+  e.preventDefault(); if(busy) return;
+  busy = true; $("go").disabled = true; $("err").textContent = "";
+  const email=$("email").value.trim(), pass=$("pass").value;
+  try{
+    if(mode==="login"){ await signInWithEmailAndPassword(auth,email,pass); }
+    else{
+      const p = {name:$("name").value.trim(), phone:$("phone").value.trim(), role:$("role").value};
+      const cred = await createUserWithEmailAndPassword(auth,email,pass);
+      try{
+        if(mode==="new") await createFamily(cred.user,p,email,$("famName").value.trim());
+        else await joinFamily(cred.user,p,email,$("code").value.trim().toUpperCase());
+      }catch(x){ await cred.user.delete().catch(()=>{}); throw x; }
+    }
+  }catch(x){ $("err").textContent = msg(x); }
+  busy = false; $("go").disabled = false;
+  if(auth.currentUser) boot(auth.currentUser);
+};
+
+async function createFamily(u,p,email,famName){
+  const fref = doc(collection(db,"families")), code = genCode(), b = writeBatch(db);
+  const f = {name:famName, inviteCode:code, members:[u.uid], husbandUid:null, wifeUid:null, husbandName:null, wifeName:null, createdAt:serverTimestamp()};
+  f[p.role==="mume"?"husbandUid":"wifeUid"] = u.uid;
+  f[p.role==="mume"?"husbandName":"wifeName"] = p.name;
+  b.set(fref,f);
+  b.set(doc(db,"invites",code),{familyId:fref.id,createdBy:u.uid,creatorRole:p.role,used:false,createdAt:serverTimestamp()});
+  b.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:fref.id,createdAt:serverTimestamp()});
+  await b.commit();
+}
+
+async function joinFamily(u,p,email,code){
+  const iref = doc(db,"invites",code);
+  await runTransaction(db, async tx => {
+    const inv = await tx.get(iref);
+    if(!inv.exists()) throw fail("Code hii haipo. Angalia uliyotumiwa na mwenza wako.");
+    const i = inv.data();
+    if(i.used) throw fail("Code hii imeshatumika.");
+    if(i.creatorRole===p.role) throw fail("Familia hii tayari ina "+roleName(p.role)+". Chagua nafasi nyingine.");
+    const fref = doc(db,"families",i.familyId), fs = await tx.get(fref);
+    if(!fs.exists() || fs.data().members.length>=2) throw fail("Familia hii imejaa.");
+    const f = fs.data(), k = p.role==="mume"?"husband":"wife";
+    tx.update(fref,{members:[...f.members,u.uid],[k+"Uid"]:u.uid,[k+"Name"]:p.name});
+    tx.update(iref,{used:true,usedBy:u.uid});
+    tx.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:i.familyId,createdAt:serverTimestamp()});
+  });
+}
+
+/* Mtumiaji aliyeshasajiliwa anahamia familia ya mwenza kwa code */
+async function switchFamily(code){
+  const iref = doc(db,"invites",code), uref = doc(db,"users",me.uid);
+  await runTransaction(db, async tx => {
+    const inv = await tx.get(iref);
+    if(!inv.exists()) throw fail("Code hii haipo. Angalia uliyotumiwa na mwenza wako.");
+    const i = inv.data();
+    if(i.used) throw fail("Code hii imeshatumika.");
+    if(i.familyId===me.familyId) throw fail("Hii ni code ya familia yako mwenyewe. Mpe mwenza wako.");
+    const role = i.creatorRole==="mume" ? "mke" : "mume", k = role==="mume" ? "husband" : "wife";
+    const fref = doc(db,"families",i.familyId), fs = await tx.get(fref);
+    if(!fs.exists() || fs.data().members.length>=2) throw fail("Familia hii imejaa.");
+    tx.update(fref,{members:[...fs.data().members,me.uid],[k+"Uid"]:me.uid,[k+"Name"]:me.name});
+    tx.update(iref,{used:true,usedBy:me.uid});
+    tx.update(uref,{familyId:i.familyId,role});
+  });
+}
+$("switchForm").onsubmit = async e => {
+  e.preventDefault();
+  const code = $("switchCode").value.trim().toUpperCase(); if(!code) return;
+  if(!(await confirmDlg("Hamia familia ya mwenza wako?"))) return;
+  try{ await switchFamily(code); toast("Mmeunganishwa!"); $("switchCode").value=""; boot(auth.currentUser); }
+  catch(x){ toast(msg(x)); }
+};
+
+/* ---------- Session ---------- */
+onAuthStateChanged(auth, u => { if(busy) return; u ? boot(u) : showAuth(); });
+$("logout").onclick = async () => { if(await confirmDlg("Unataka kutoka?")) signOut(auth); };
+
+function clearSubs(){unsubs.forEach(f=>f());unsubs=[];me=fam=null}
+function showAuth(){clearSubs();$("loading").classList.add("hide");$("app").classList.add("hide");$("auth").classList.remove("hide");setMode("login")}
+
+async function boot(u){
+  clearSubs();
+  try{
+    const s = await getDoc(doc(db,"users",u.uid));
+    if(!s.exists()){ // usajili haukukamilika
+      await signOut(auth); showAuth(); $("err").textContent="Akaunti haijakamilika. Jisajili upya."; return;
+    }
+    me = {uid:u.uid,...s.data()};
+    if(!me.familyId){ await signOut(auth); showAuth(); $("err").textContent="Akaunti hii haina familia (usajili haukukamilika). Jisajili upya kwa email mpya, au futa user huyu kwenye Firebase Authentication kisha ujisajili tena."; return; }
+    $("loading").classList.add("hide");$("auth").classList.add("hide");$("app").classList.remove("hide");
+    unsubs.push(onSnapshot(doc(db,"families",me.familyId), s => { fam={id:s.id,...s.data()}; renderFamily(); },
+      x => toast(msg(x))));
+    startData();
+  }catch(x){ $("loading").textContent = msg(x); $("loading").classList.remove("hide"); }
+}
+
+/* ---------- i18n + modules ---------- */
+let lang = localStorage.getItem("lang")==="en"?1:0;
+const t = s => s.split("|")[lang]||s, val = o => o.split("|")[0];
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+const today = () => new Date().toLocaleDateString("sv");
+const addDays = n => {const x=new Date();x.setDate(x.getDate()+n);return x.toLocaleDateString("sv")};
+const P="Kawaida|Normal,Juu|High,Chini|Low", S="Inasubiri|Pending,Inaendelea|In progress,Imekamilika|Done", W="Mume|Husband,Mke|Wife,Wote|Both";
+const TI=["title","Kichwa|Title"], NO=["note","Maelezo|Notes","area"], DT=(k,l)=>[k,l,"date"];
+const PR=["prio","Kipaumbele|Priority","select",P], ST=["status","Hali|Status","select",S], SS=["status","Imekamilika","Inasubiri"];
+const M = {
+ schedules:{i:"calendar",n:"Ratiba|Schedule",d:"date",s:SS,f:[TI,DT("date","Tarehe|Date"),["start","Kuanza|Start","time"],["end","Kuisha|End","time"],["type","Aina|Type","select","Nyumbani|Home,Kazi|Work,Watoto|Children,Safari|Trip,Ibada|Worship,Mkutano|Meeting,Kliniki|Clinic,Nyingine|Other"],["who","Anayehusika|Assigned","select",W],PR,ST,NO]},
+ promises:{i:"shield",n:"Ahadi|Promises",d:"due",late:1,s:SS,f:[TI,NO,DT("due","Tarehe ya mwisho|Due date"),PR,ST,["proof","Ushahidi/Maoni|Proof/Comment","area"]]},
+ tasks:{i:"tasks",n:"Majukumu|Tasks",d:"due",late:1,s:SS,f:[TI,NO,["who","Aliyepangiwa|Assigned","select",W],DT("start","Kuanza|Start"),DT("due","Mwisho|Due"),PR,ST]},
+ meals:{i:"utensils",n:"Chakula|Meals",d:"date",f:[DT("date","Tarehe|Date"),["kind","Mlo|Meal","select","Kifungua kinywa|Breakfast,Chakula cha mchana|Lunch,Chakula cha jioni|Dinner,Vitafunwa|Snacks,Chakula cha watoto|Kids meal"],["title","Jina la chakula|Dish"],["ingr","Viungo|Ingredients","area"],["who","Anayeandaa|Cook","select",W],["cost","Gharama|Est. cost","number"],NO]},
+ shopping:{i:"cart",n:"Manunuzi|Shopping",s:["status","Imenunuliwa","Haijanunuliwa",1],f:[["title","Bidhaa|Item"],["qty","Idadi|Qty","number"],["price","Bei|Est. price","number"],PR,["status","Hali|Status","select","Haijanunuliwa|Not bought,Imenunuliwa|Bought"]]},
+ finances:{i:"wallet",n:"Fedha|Finance",d:"date",f:[["type","Aina|Type","select","Matumizi|Expense,Mapato|Income,Akiba|Savings,Deni|Debt,Bili|Bill"],["title","Maelezo mafupi|Title"],["amount","Kiasi (TZS)|Amount","number"],DT("date","Tarehe|Date"),["cat","Kundi|Category","select","Chakula|Food,Nyumba|Home,Watoto|Children,Usafiri|Transport,Nyingine|Other"],NO]},
+ children:{i:"smile",n:"Watoto|Children",d:"clinic",f:[["title","Jina|Name"],DT("dob","Kuzaliwa|Birth date"),["weight","Uzito (kg)|Weight","number"],["height","Urefu (cm)|Height","number"],DT("clinic","Kliniki ijayo|Next clinic"),["vaccine","Chanjo|Vaccines"],["meds","Dawa|Medicine"],["sleep","Ratiba ya kulala|Sleep"],["food","Ratiba ya kula|Feeding"],["school","Shule|School needs"],NO]},
+ events:{i:"gift",n:"Matukio|Events",d:"date",f:[TI,DT("date","Tarehe|Date"),["kind","Aina|Type","select","Kuzaliwa|Birthday,Anniversary|Anniversary,Sikukuu|Holiday,Safari|Trip,Sherehe|Party,Ziara|Visit"],NO]},
+ announcements:{i:"megaphone",n:"Matangazo|Notices",f:[["title","Tangazo|Message","area"]]},
+ notes:{i:"note",n:"Kumbukumbu|Notes",f:[TI,["text","Andika|Write","area"],["kind","Aina|Type","select","Wazo|Idea,Ushauri|Advice,Mpango|Plan,Kumbukumbu|Diary,Mafanikio|Win,Ujumbe kwa mwenza|Message to partner"]]}
+};
+const NAV=[["home","home","Mwanzo|Home"],...Object.keys(M).map(k=>[k,M[k].i,M[k].n]),["chat","chat","Chat|Chat"],["settings","settings","Mipangilio|Settings"]];
+const D={}, lim={}, qs={}; let view="home";
+const colRef = c => collection(db,"families",me.familyId,c);
+
+function drawNav(){
+  $("nav").innerHTML = NAV.map(([k,i,n])=>`<button type="button" data-v="${k}" class="${k===view?"on":""}">${ic(i)}${esc(t(n))}</button>`).join("");
+  $("nav").onclick = e => {const b=e.target.closest("button");if(b)go(b.dataset.v)};
+}
+function startData(){
+  for(const k in D) delete D[k];
+  const mk=(c,n,fn)=>unsubs.push(onSnapshot(query(colRef(c),orderBy("createdAt","desc"),limit(n)),s=>{D[c]=s.docs.map(d=>({id:d.id,ref:d.ref,...d.data()}));fn(c)},x=>toast(msg(x))));
+  Object.keys(M).forEach(c=>mk(c,200,c=>{if(view==="home"||view===c)draw()}));
+  mk("messages",100,()=>{D.messages.reverse();if(view==="chat")draw()});
+  drawNav(); go(view); setTimeout(notifyDue,3000);
+}
+function go(v){
+  view=v; lim[v]=20; qs[v=v]=""; drawNav(); const V=$("view");
+  if(M[v]){
+    V.innerHTML=`<div class="row" style="margin-top:14px"><input id="q" type="search" placeholder="${t("Tafuta…|Search…")}"><button class="btn" id="add" type="button">${ic("plus")}${t("Ongeza|Add")}</button></div><div class="mut note">${ic("lock")} ${t("Kufuta kunahitaji ridhaa ya wote wawili.|Deleting needs both partners to agree.")}</div><div id="sum"></div><div class="card" id="lst"></div>`;
+    $("q").oninput=e=>{qs[v]=e.target.value;lim[v]=20;draw()}; $("add").onclick=()=>openForm(v);
+    $("lst").onclick=async e=>{
+      const b=e.target.closest("[data-a]"); if(!b) return; const a=b.dataset.a;
+      if(a==="m"){lim[v]+=20;draw();return}
+      const x=(D[v]||[]).find(i=>i.id===b.dataset.id); if(!x) return;
+      if(a==="e") openForm(v,x);
+      else if(a==="d"){
+        if((fam?.members?.length||1)<2){ if(await confirmDlg(t("Futa kipengele hiki?|Delete this item?"))) deleteDoc(x.ref).catch(er=>toast(msg(er))); }
+        else if(await confirmDlg(t("Omba mwenza akubali kufuta kipengele hiki? Hakitafutwa hadi akubali.|Ask your partner to approve deleting this item? It stays until they agree."))) updateDoc(x.ref,{delReq:{by:me.uid,byName:me.name,at:Date.now()}}).then(()=>toast(t("Ombi limetumwa kwa mwenza.|Request sent to your partner."))).catch(er=>toast(msg(er)));
+      }
+      else if(a==="u") updateDoc(x.ref,{delReq:null}).catch(er=>toast(msg(er)));
+      else if(a==="y"){ if(await confirmDlg(t("Kubali kufuta kipengele hiki kabisa?|Approve deleting this item permanently?"))) deleteDoc(x.ref).catch(er=>toast(msg(er))); }
+      else if(a==="c"){ const s=M[v].s; updateDoc(x.ref,{[s[0]]:b.checked?s[1]:s[2],...(s[3]&&b.checked?{boughtBy:me.name}:{})}).catch(er=>toast(msg(er))); }
+    };
+  } else if(v==="chat"){
+    V.innerHTML=`<div class="card" id="msgs" style="height:55vh;overflow:auto"></div><form id="cf" class="row" style="margin-top:10px"><input id="ci" required autocomplete="off"><button class="btn" type="submit">${ic("send")}${t("Tuma|Send")}</button></form>`;
+    $("cf").onsubmit=async e=>{e.preventDefault();const text=$("ci").value.trim();if(!text)return;$("ci").value="";
+      try{await addDoc(colRef("messages"),{text,by:me.uid,byName:me.name,readBy:[me.uid],createdAt:serverTimestamp()})}catch(x){$("ci").value=text;toast(msg(x))}};
+  } else if(v==="settings"){
+    V.innerHTML=`<div class="card"><h3>${t("Lugha|Language")}</h3><button class="ghost" id="sl" type="button">${lang?"Kiswahili":"English"}</button></div>
+<div class="card"><h3>${t("Arifa|Notifications")}</h3><button class="ghost" id="sn" type="button">${t("Washa arifa|Enable notifications")}</button></div>
+<div class="card"><h3>Password</h3><button class="ghost" id="sp" type="button">${t("Tuma link ya kubadilisha|Send reset link")}</button></div>
+<div class="card"><h3>${t("Akaunti|Account")}</h3><button class="ghost" id="sd" type="button" style="color:var(--bad)">${t("Futa akaunti yangu|Delete my account")}</button></div>`;
+    $("sl").onclick=()=>{lang=1-lang;localStorage.setItem("lang",lang?"en":"sw");go("settings")};
+    $("sn").onclick=async()=>{if(!("Notification" in window))return toast("Hakuna msaada kwenye browser hii");toast(await Notification.requestPermission())};
+    $("sp").onclick=()=>sendPasswordResetEmail(auth,me.email).then(()=>toast(t("Link imetumwa kwenye email.|Reset link sent."))).catch(x=>toast(msg(x)));
+    $("sd").onclick=async()=>{
+      if(!(await confirmDlg(t("Futa akaunti yako kabisa?|Delete your account permanently?"))))return;
+      const copy={...me};delete copy.uid;
+      try{await deleteDoc(doc(db,"users",me.uid));await auth.currentUser.delete()}
+      catch(x){await setDoc(doc(db,"users",me.uid),copy).catch(()=>{});toast(x.code==="auth/requires-recent-login"?t("Toka kisha ingia tena, kisha jaribu.|Log out, sign in again, then retry."):msg(x))}
+    };
+  }
+  draw(); scrollTo(0,0);
+}
+function draw(){ if(!me) return; if(view==="home") $("view").innerHTML=home(); else if(M[view]) list(view); else if(view==="chat") chat(); }
+
+const show=(f,v)=>{if(f[2]==="select"){const o=f[3].split(",").find(o=>val(o)===v);return o?t(o):v}return v};
+function list(c){
+  const m=M[c], q=(qs[c]||"").toLowerCase(), td=today();
+  let a=(D[c]||[]).filter(x=>!q||JSON.stringify(Object.values(x)).toLowerCase().includes(q));
+  if(m.d) a.sort((x,y)=>(y[m.d]||"").localeCompare(x[m.d]||""));
+  const more=a.length>lim[c]; a=a.slice(0,lim[c]);
+  if(c==="finances"){
+    const mo=td.slice(0,7),s={};(D.finances||[]).filter(x=>(x.date||"").startsWith(mo)).forEach(x=>s[x.type]=(s[x.type]||0)+(+x.amount||0));
+    const inc=s.Mapato||0,exp=(s.Matumizi||0)+(s.Bili||0),mx=Math.max(inc,exp,1),n=v=>v.toLocaleString("sw-TZ");
+    $("sum").innerHTML=`<div class="card"><h3>${t("Mwezi huu|This month")} (${mo})</h3><div class="mut">${t("Mapato|Income")}: ${n(inc)}</div><div class="bar" style="width:${inc/mx*100}%;background:var(--ok)"></div><div class="mut">${t("Matumizi|Spending")}: ${n(exp)}</div><div class="bar" style="width:${exp/mx*100}%;background:var(--bad)"></div><b>${t("Salio|Balance")}: ${n(inc-exp)}</b></div>`;
+  }
+  $("lst").innerHTML = a.map(x=>{
+    const done=(m.s&&x[m.s[0]]===m.s[1])||x.done, ttl=x.title||x.text||"", body=x.title?(x.note||x.text):x.note;
+    const meta=m.f.filter(f=>!["title","note","text"].includes(f[0])&&x[f[0]]!==undefined&&x[f[0]]!=="").map(f=>`${t(f[1])}: ${esc(show(f,x[f[0]]))}`);
+    if(x.byName) meta.push(esc(x.byName));
+    const late=m.late&&!done&&x[m.d]&&x[m.d]<td?` <span class="pill wait">${t("Imechelewa|Late")}</span>`:"";
+    const dr=x.delReq, bt=(a,c,l)=>`<button class="mini ${c}" type="button" data-a="${a}" data-id="${x.id}">${t(l)}</button>`;
+    const ban=!dr?"":dr.by===me.uid
+      ?`<div class="req">${ic("clock")}<span>${t("Umeomba kufuta. Unasubiri mwenza akubali.|You asked to delete. Waiting for your partner.")}</span>${bt("u","","Ghairi|Cancel")}</div>`
+      :`<div class="req">${ic("alert")}<span>${esc(dr.byName||"")} ${t("anaomba kufuta kipengele hiki.|wants to delete this item.")}</span>${bt("u","","Kataa|Decline")}${bt("y","bad","Kubali|Approve")}</div>`;
+    return `<div class="item${done?" done":""}">${m.s?`<input type="checkbox" data-a="c" data-id="${x.id}" ${done?"checked":""} aria-label="ok">`:""}<div class="t"><b>${esc(ttl)}</b>${late}${body?`<div>${esc(body)}</div>`:""}<div class="mut">${meta.join(" · ")}</div>${ban}</div><button class="x" data-a="e" data-id="${x.id}" aria-label="Edit">${ic("pencil")}</button>${dr?"":`<button class="x bad" data-a="d" data-id="${x.id}" aria-label="Delete">${ic("trash")}</button>`}</div>`;
+  }).join("") + (more?`<button class="ghost" data-a="m" type="button" style="margin-top:8px">${t("Onyesha zaidi|Show more")}</button>`:"") || `<div class="empty">${t("Hakuna kitu bado. Bonyeza Ongeza.|Nothing yet. Tap Add.")}</div>`;
+}
+function openForm(c,x){
+  const m=M[c], f=$("ff");
+  f.innerHTML=`<h3>${t(m.n)}</h3>`+m.f.map(([k,l,ty,o],i)=>{
+    const v=x?.[k]??(k==="date"?today():""), id="f_"+k, r=i===0?"required":"";
+    const inp=ty==="select"?`<select id="${id}">${o.split(",").map(s=>`<option value="${val(s)}" ${val(s)===v?"selected":""}>${esc(t(s))}</option>`).join("")}</select>`
+      :ty==="area"?`<textarea id="${id}" rows="3" ${r}>${esc(v)}</textarea>`
+      :`<input id="${id}" type="${ty||"text"}" ${ty==="number"?'step="any" inputmode="decimal"':""} value="${esc(v)}" ${r}>`;
+    return `<label for="${id}">${esc(t(l))}</label>${inp}`;
+  }).join("")+`<div class="row" style="margin-top:16px"><button class="ghost" type="button" id="fc">${t("Ghairi|Cancel")}</button><button class="btn" type="submit">${t("Hifadhi|Save")}</button></div>`;
+  $("fc").onclick=()=>$("fd").close();
+  f.onsubmit=async e=>{
+    e.preventDefault(); const d={};
+    m.f.forEach(([k,,ty])=>{const v=$("f_"+k).value.trim();d[k]=ty==="number"?(v===""?"":+v):v});
+    if(m.s&&m.s[3]&&d[m.s[0]]===m.s[1]) d.boughtBy=me.name;
+    try{
+      if(x) await updateDoc(x.ref,d); else await addDoc(colRef(c),{...d,by:me.uid,byName:me.name,createdAt:serverTimestamp()});
+      $("fd").close();
+    }catch(er){toast(msg(er))}
+  };
+  $("fd").showModal();
+}
+function chat(){
+  const b=$("msgs"); if(!b) return;
+  b.innerHTML=(D.messages||[]).map(x=>{
+    const mine=x.by===me.uid, rd=x.readBy||[];
+    if(!mine&&!rd.includes(me.uid)) updateDoc(x.ref,{readBy:arrayUnion(me.uid)}).catch(()=>{});
+    const tm=x.createdAt?x.createdAt.toDate().toLocaleString("sw-TZ",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"…";
+    return `<div style="display:flex;justify-content:${mine?"flex-end":"flex-start"}"><div style="max-width:80%;margin:4px 0;padding:8px 12px;border-radius:14px;background:${mine?"var(--pri)":"var(--soft)"};color:${mine?"#fff":"var(--ink)"}"><div style="overflow-wrap:anywhere">${esc(x.text)}</div><div style="font-size:.7rem;opacity:.8;text-align:right">${tm} ${mine?ic("check")+(rd.length>1?ic("check"):""):""}</div></div></div>`;
+  }).join("")||`<div class="empty">${t("Anza mazungumzo.|Start chatting.")}</div>`;
+  b.scrollTop=b.scrollHeight;
+}
+
+/* ---------- Dashboard ---------- */
+function up(){const td=today(),A=c=>D[c]||[];
+  return {pr:A("promises").filter(x=>x.status!=="Imekamilika"&&x.due&&x.due<=addDays(3)).sort((a,b)=>a.due.localeCompare(b.due)),
+          ev:A("events").filter(x=>x.date>=td&&x.date<=addDays(30)).sort((a,b)=>a.date.localeCompare(b.date))}}
+function notifyDue(){
+  if(!("Notification" in window)||Notification.permission!=="granted") return;
+  const u=up(),n=u.pr.length+u.ev.length;
+  if(n) new Notification("Family Hub",{body:t(`Una vikumbusho ${n}.|You have ${n} reminders.`)});
+}
+function home(){
+  const td=today(),A=c=>D[c]||[],u=up();
+  const card=(h,a)=>`<section class="card"><h3>${h}</h3>${a.length?a.join(""):`<div class="empty">${t("Hakuna bado.|Nothing yet.")}</div>`}</section>`;
+  const li=(i,a,b)=>`<div class="item"><span class="ib">${ic(i)}</span><div class="t">${esc(a)}<div class="mut">${esc(b||"")}</div></div></div>`;
+  const open=A("tasks").filter(x=>x.status!=="Imekamilika"&&!x.done);
+  const plan=[...A("schedules").filter(x=>x.date===td).map(x=>li("calendar",x.title,x.start||"")),
+    ...A("meals").filter(x=>x.date===td).map(x=>li("utensils",x.title,show(M.meals.f[1],x.kind))),
+    ...open.filter(x=>x.due===td).map(x=>li("check",x.title||x.text,t("Leo|Today")))];
+  const fresh=Object.keys(M).flatMap(c=>A(c).filter(x=>x.by&&x.by!==me.uid&&x.createdAt&&Date.now()-x.createdAt.toMillis()<864e5).map(x=>li(M[c].i,x.title||x.text||"",`${x.byName} · ${t(M[c].n)}`))).slice(0,6);
+  const pill=(n,l)=>`<span class="pill" style="margin:3px">${n} ${t(l)}</span>`;
+  return `<section class="card"><h3>${ic("clock")}${t("Mpango wa leo|Today's plan")}</h3>${plan.length?plan.join(""):`<div class="empty">${t("Hakuna mpango wa leo.|No plan for today.")}</div>`}</section>
+<div class="grid">
+${card(ic("shield")+" "+t("Ahadi zinazokaribia|Upcoming promises"),u.pr.map(x=>li("shield",x.title,x.due+(x.due<td?" · "+t("Imechelewa|Late"):""))))}
+${card(ic("check")+" "+t("Majukumu yasiyokamilika|Open tasks"),open.slice(0,5).map(x=>li("check",x.title||x.text,x.due||"")))}
+${card(ic("gift")+" "+t("Matukio yanayokuja|Upcoming events"),u.ev.slice(0,5).map(x=>li("gift",x.title,x.date)))}
+${card(ic("bell")+" "+t("Mpya kutoka kwa mwenza|New from partner"),fresh)}
+</div>
+<section class="card"><h3>${ic("tasks")}${t("Muhtasari|Summary")}</h3>${pill(open.length,"majukumu|tasks")}${pill(A("promises").filter(x=>x.status!=="Imekamilika").length,"ahadi|promises")}${pill(A("shopping").filter(x=>x.status!=="Imenunuliwa").length,"za kununua|to buy")}${pill(A("schedules").filter(x=>x.date===td).length,"ratiba leo|today")}</section>`;
+}
+
+function renderFamily(){
+  if(!fam||!me) return;
+  $("famTitle").textContent = fam.name;
+  const h=new Date().getHours(), g = h<12?"Habari za asubuhi":h<17?"Habari za mchana":"Habari za jioni";
+  $("hello").textContent = `${g}, ${me.name.split(" ")[0]} (${roleName(me.role)})`;
+  const full = fam.members.length>=2;
+  $("inviteBox").classList.toggle("hide", full);
+  $("switchBox").classList.toggle("hide", full);
+  $("inviteCode").textContent = fam.inviteCode;
+  const row = (n,r) => `<div class="item"><div class="t"><b></b><div class="mut">${r}</div></div><span class="pill ${n?"":"wait"}">${n?"Amejiunga":"Anasubiriwa"}</span></div>`;
+  const box = $("members"); box.innerHTML = row(fam.husbandName,"MUME")+row(fam.wifeName,"MKE");
+  box.querySelectorAll("b").forEach((b,i)=>b.textContent = (i?fam.wifeName:fam.husbandName) || "—");
+}
+$("copy").onclick = async () => { try{await navigator.clipboard.writeText(fam.inviteCode);toast("Code imenakiliwa")}catch{toast("Bonyeza code kwa muda uinakili")} };
+const tick = () => $("clock").textContent = new Date().toLocaleString("sw-TZ",{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
+tick(); setInterval(tick,30000);
+</script>
+</body>
+</html>
