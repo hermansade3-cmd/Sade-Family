@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isMember(fid) {
+      return signedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/families/$(fid)).data.members;
+    }
+
+    // Profile ya mtumiaji: yeye mwenyewe, na mwenza wa familia moja anaweza kusoma.
+    match /users/{uid} {
+      allow create, update: if signedIn() && request.auth.uid == uid;
+      allow read: if signedIn() && (request.auth.uid == uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == resource.data.familyId);
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Invitation codes: kusoma kwa code maalum tu (get), hakuna kuorodhesha (list).
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.used == false;
+      allow update: if signedIn()
+        && resource.data.used == false
+        && request.resource.data.used == true
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used','usedBy']);
+    }
+
+    match /families/{fid} {
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+
+      allow create: if signedIn()
+        && request.resource.data.members == [request.auth.uid]
+        && (request.resource.data.husbandUid == request.auth.uid
+            || request.resource.data.wifeUid == request.auth.uid);
+
+      // Mwenza anajiunga: mwanafamilia mmoja tu aliyepo, nafasi tupu, code halali isiyotumika.
+      allow update: if signedIn()
+        && resource.data.members.size() == 1
+        && !(request.auth.uid in resource.data.members)
+        && request.resource.data.members.size() == 2
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.members[0] == resource.data.members[0]
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['members','husbandUid','wifeUid','husbandName','wifeName'])
+        && get(/databases/$(database)/documents/invites/$(resource.data.inviteCode)).data.used == false
+        && ((resource.data.husbandUid == null && request.resource.data.husbandUid == request.auth.uid
+             && request.resource.data.wifeUid == resource.data.wifeUid)
+         || (resource.data.wifeUid == null && request.resource.data.wifeUid == request.auth.uid
+             && request.resource.data.husbandUid == resource.data.husbandUid));
+
+      // Moduli zote za familia (tasks, announcements, schedules, promises...) ziko chini ya familia.
+      match /{col}/{docId} {
+        allow read, write: if isMember(fid);
+      }
+    }
+  }
+}

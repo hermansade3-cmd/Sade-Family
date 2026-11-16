@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Family Hub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#F2F6F4;--card:#fff;--ink:#1D2B2E;--mut:#5E7276;--pri:#2B6E72;--pri2:#1F5457;--acc:#E3A53B;--soft:#E3EEEB;--line:#D5E2DE;--bad:#B3392F;--ok:#2E7D4F}
+:root[data-t=dark]{--bg:#121B1D;--card:#1A2629;--ink:#E7F0EE;--mut:#93A9AD;--pri:#4FB0B5;--pri2:#7CCDD1;--soft:#22343A;--line:#2C4247;--bad:#E8786E;--ok:#6CC58C}
+*{box-sizing:border-box;margin:0}
+body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button,input,select{font:inherit;color:inherit}
+.hide{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.auth{max-width:420px;margin:0 auto;padding:28px 18px}
+.brand{font-weight:800;font-size:1.9rem;color:var(--pri)}
+.brand small{display:block;font-size:.95rem;font-weight:600;color:var(--mut);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.tabs{display:flex;background:var(--soft);border-radius:12px;padding:4px;margin:18px 0 4px}
+.tabs button{flex:1;border:0;background:none;padding:10px;border-radius:9px;font-weight:700;color:var(--mut);cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--pri);box-shadow:0 1px 3px #0002}
+label{display:block;font-size:.85rem;font-weight:700;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.btn{width:100%;margin-top:16px;padding:12px;border:0;border-radius:12px;background:var(--pri);color:#fff;font-weight:800;cursor:pointer}
+.btn:hover{background:var(--pri2)}.btn:disabled{opacity:.6}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);width:auto;margin:0;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+.err{color:var(--bad);font-weight:700;font-size:.9rem;margin-top:10px;min-height:1.2em}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 4px}
+h2{font-size:1.15rem}h3{font-size:1rem;margin-bottom:8px}
+.hello{font-size:1.5rem;font-weight:800}
+.mut{color:var(--mut);font-size:.9rem}
+.code{font-size:1.5rem;font-weight:800;letter-spacing:.18em;color:var(--pri);background:var(--soft);padding:10px 14px;border-radius:12px;display:inline-block;margin:8px 0;user-select:all}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:800;background:var(--soft);color:var(--pri)}
+.pill.wait{background:#E3A53B33;color:#8A5A00}
+.row{display:flex;gap:8px}.row>*{flex:1}.row .btn{margin-top:0;width:auto}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.item.done .t{text-decoration:line-through;color:var(--mut)}
+.x{border:0;background:none;color:var(--bad);font-size:1.2rem;cursor:pointer;padding:4px 8px}
+.empty{color:var(--mut);padding:10px 0;font-size:.92rem}
+.grid{display:grid;gap:0 14px}
+@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:700;z-index:9}
+.load{display:grid;place-items:center;min-height:60vh;color:var(--mut);font-weight:700}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:20px;max-width:340px}
+dialog::backdrop{background:#0008}
+</style>
+</head>
+<body>
+
+<div id="loading" class="load">Inapakia…</div>
+
+<!-- AUTH -->
+<main id="auth" class="auth hide">
+  <div class="brand">Family Hub<small>Nyumba moja, mipango yenu wawili.</small></div>
+  <div class="tabs" role="tablist">
+    <button id="tLogin" class="on" type="button">Ingia</button>
+    <button id="tNew" type="button">Familia mpya</button>
+    <button id="tJoin" type="button">Nina code</button>
+  </div>
+  <form id="authForm" class="card" autocomplete="on">
+    <div id="fName" class="hide"><label for="name">Jina kamili</label><input id="name" autocomplete="name"></div>
+    <div id="fPhone" class="hide"><label for="phone">Namba ya simu</label><input id="phone" type="tel" autocomplete="tel"></div>
+    <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+    <label for="pass">Password (angalau herufi 6)</label><input id="pass" type="password" autocomplete="current-password" required minlength="6">
+    <div id="fRole" class="hide"><label for="role">Nafasi yako</label>
+      <select id="role"><option value="mume">MUME</option><option value="mke">MKE</option></select></div>
+    <div id="fFam" class="hide"><label for="famName">Jina la familia</label><input id="famName" placeholder="Mfano: Familia ya Mushi"></div>
+    <div id="fCode" class="hide"><label for="code">Family Invitation Code</label><input id="code" maxlength="8" style="text-transform:uppercase;letter-spacing:.15em"></div>
+    <div id="err" class="err" role="alert"></div>
+    <button id="go" class="btn" type="submit">Ingia</button>
+  </form>
+  <p class="mut" style="margin-top:14px"><a href="#" id="forgot" style="color:var(--pri)">Nimesahau password</a></p>
+</main>
+
+<!-- APP -->
+<main id="app" class="wrap hide">
+  <header>
+    <div class="brand" style="font-size:1.3rem" id="famTitle">Family Hub</div>
+    <div class="row" style="flex:none">
+      <button class="ghost" id="theme" type="button" aria-label="Badilisha mwonekano">◐</button>
+      <button class="ghost" id="logout" type="button">Toka</button>
+    </div>
+  </header>
+  <div class="hello" id="hello"></div>
+  <div class="mut" id="clock"></div>
+
+  <section id="inviteBox" class="card hide">
+    <h3>Mwalike mwenza wako</h3>
+    <div class="mut">Mpe mwenza wako code hii ajisajili kwenye "Nina code". Inatumika mara moja tu.</div>
+    <div class="code" id="inviteCode"></div>
+    <div><button class="ghost" id="copy" type="button">Nakili code</button></div>
+  </section>
+
+  <section class="card">
+    <h3>Wanafamilia</h3>
+    <div id="members"></div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h3>Majukumu ya familia</h3>
+      <form class="row" data-add="tasks"><input placeholder="Jukumu jipya…" required><button class="btn" type="submit">Ongeza</button></form>
+      <div id="list-tasks"></div>
+    </section>
+    <section class="card">
+      <h3>Matangazo</h3>
+      <form class="row" data-add="announcements"><input placeholder="Andika tangazo…" required><button class="btn" type="submit">Tuma</button></form>
+      <div id="list-announcements"></div>
+    </section>
+  </div>
+</main>
+
+<dialog id="dlg"><p id="dlgMsg" style="font-weight:700"></p>
+  <div class="row" style="margin-top:16px"><button class="ghost" id="dNo" type="button">Hapana</button><button class="btn" id="dYes" type="button">Ndiyo</button></div>
+</dialog>
+<div id="toast" class="hide"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail}
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,limit,
+  serverTimestamp,runTransaction,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== WEKA FIREBASE CONFIG YAKO HAPA ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCF3NcUqw0fxh14iew-zYXDwp3aoomo8Ag",
+  authDomain: "sadetrade-6cce2.firebaseapp.com",
+  projectId: "sadetrade-6cce2",
+  storageBucket: "sadetrade-6cce2.firebasestorage.app",
+  messagingSenderId: "7070568393",
+  appId: "1:7070568393:web:89443b14b08f1f36c3e218",
+  measurementId: "G-8KW59X2V2J"
+};
+/* ============================================ */
+
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+let mode = "login", me = null, fam = null, unsubs = [], busy = false;
+
+const errs = {
+  "auth/email-already-in-use":"Email hii tayari imesajiliwa. Tumia \"Ingia\".",
+  "auth/invalid-credential":"Email au password si sahihi.",
+  "auth/wrong-password":"Email au password si sahihi.",
+  "auth/user-not-found":"Email au password si sahihi.",
+  "auth/weak-password":"Password iwe na angalau herufi 6.",
+  "auth/invalid-email":"Email haijaandikwa vizuri.",
+  "auth/network-request-failed":"Hakuna mtandao. Angalia intaneti kisha jaribu tena.",
+  "auth/too-many-requests":"Majaribio mengi. Subiri kidogo kisha jaribu tena.",
+  "permission-denied":"Huna ruhusa ya kufanya hili. Angalia code au Security Rules."
+};
+const msg = e => e.userMessage || errs[e.code] || ("Kuna tatizo: " + (e.message || e));
+function toast(t){const el=$("toast");el.textContent=t;el.classList.remove("hide");clearTimeout(toast.h);toast.h=setTimeout(()=>el.classList.add("hide"),2600)}
+function confirmDlg(t){return new Promise(r=>{$("dlgMsg").textContent=t;const d=$("dlg");d.showModal();
+  $("dYes").onclick=()=>{d.close();r(true)};$("dNo").onclick=()=>{d.close();r(false)};d.oncancel=()=>r(false)})}
+const roleName = r => r==="mume" ? "MUME" : "MKE";
+const fail = m => {const e=new Error(m);e.userMessage=m;return e};
+
+/* ---------- Theme ---------- */
+const root = document.documentElement;
+root.dataset.t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+$("theme").onclick = () => root.dataset.t = root.dataset.t==="dark" ? "light" : "dark";
+
+/* ---------- Auth UI ---------- */
+function setMode(m){
+  mode = m; $("err").textContent = "";
+  ["tLogin","tNew","tJoin"].forEach(id=>$(id).classList.remove("on"));
+  $({login:"tLogin",new:"tNew",join:"tJoin"}[m]).classList.add("on");
+  const reg = m!=="login";
+  ["fName","fPhone","fRole"].forEach(id=>$(id).classList.toggle("hide",!reg));
+  $("fFam").classList.toggle("hide",m!=="new");
+  $("fCode").classList.toggle("hide",m!=="join");
+  $("name").required=$("phone").required=reg; $("famName").required=m==="new"; $("code").required=m==="join";
+  $("pass").autocomplete = reg ? "new-password" : "current-password";
+  $("go").textContent = {login:"Ingia",new:"Fungua familia",join:"Jiunge na familia"}[m];
+}
+$("tLogin").onclick=()=>setMode("login"); $("tNew").onclick=()=>setMode("new"); $("tJoin").onclick=()=>setMode("join");
+
+$("forgot").onclick = async e => {
+  e.preventDefault();
+  const em = $("email").value.trim();
+  if(!em){$("err").textContent="Andika email yako kwanza.";return}
+  try{await sendPasswordResetEmail(auth,em);toast("Link ya kubadilisha password imetumwa.")}catch(x){$("err").textContent=msg(x)}
+};
+
+const genCode = () => {const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=crypto.getRandomValues(new Uint8Array(8));return [...b].map(x=>a[x%a.length]).join("")};
+
+$("authForm").onsubmit = async e => {
+  e.preventDefault(); if(busy) return;
+  busy = true; $("go").disabled = true; $("err").textContent = "";
+  const email=$("email").value.trim(), pass=$("pass").value;
+  try{
+    if(mode==="login"){ await signInWithEmailAndPassword(auth,email,pass); }
+    else{
+      const p = {name:$("name").value.trim(), phone:$("phone").value.trim(), role:$("role").value};
+      const cred = await createUserWithEmailAndPassword(auth,email,pass);
+      try{
+        if(mode==="new") await createFamily(cred.user,p,email,$("famName").value.trim());
+        else await joinFamily(cred.user,p,email,$("code").value.trim().toUpperCase());
+      }catch(x){ await cred.user.delete().catch(()=>{}); throw x; }
+    }
+  }catch(x){ $("err").textContent = msg(x); }
+  busy = false; $("go").disabled = false;
+  if(auth.currentUser) boot(auth.currentUser);
+};
+
+async function createFamily(u,p,email,famName){
+  const fref = doc(collection(db,"families")), code = genCode(), b = writeBatch(db);
+  const f = {name:famName, inviteCode:code, members:[u.uid], husbandUid:null, wifeUid:null, husbandName:null, wifeName:null, createdAt:serverTimestamp()};
+  f[p.role==="mume"?"husbandUid":"wifeUid"] = u.uid;
+  f[p.role==="mume"?"husbandName":"wifeName"] = p.name;
+  b.set(fref,f);
+  b.set(doc(db,"invites",code),{familyId:fref.id,createdBy:u.uid,creatorRole:p.role,used:false,createdAt:serverTimestamp()});
+  b.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:fref.id,createdAt:serverTimestamp()});
+  await b.commit();
+}
+
+async function joinFamily(u,p,email,code){
+  const iref = doc(db,"invites",code);
+  await runTransaction(db, async tx => {
+    const inv = await tx.get(iref);
+    if(!inv.exists()) throw fail("Code hii haipo. Angalia uliyotumiwa na mwenza wako.");
+    const i = inv.data();
+    if(i.used) throw fail("Code hii imeshatumika.");
+    if(i.creatorRole===p.role) throw fail("Familia hii tayari ina "+roleName(p.role)+". Chagua nafasi nyingine.");
+    const fref = doc(db,"families",i.familyId), fs = await tx.get(fref);
+    if(!fs.exists() || fs.data().members.length>=2) throw fail("Familia hii imejaa.");
+    const f = fs.data(), k = p.role==="mume"?"husband":"wife";
+    tx.update(fref,{members:[...f.members,u.uid],[k+"Uid"]:u.uid,[k+"Name"]:p.name});
+    tx.update(iref,{used:true,usedBy:u.uid});
+    tx.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:i.familyId,createdAt:serverTimestamp()});
+  });
+}
+
+/* ---------- Session ---------- */
+onAuthStateChanged(auth, u => { if(busy) return; u ? boot(u) : showAuth(); });
+$("logout").onclick = async () => { if(await confirmDlg("Unataka kutoka?")) signOut(auth); };
+
+function clearSubs(){unsubs.forEach(f=>f());unsubs=[];me=fam=null}
+function showAuth(){clearSubs();$("loading").classList.add("hide");$("app").classList.add("hide");$("auth").classList.remove("hide");setMode("login")}
+
+async function boot(u){
+  clearSubs();
+  try{
+    const s = await getDoc(doc(db,"users",u.uid));
+    if(!s.exists()){ // usajili haukukamilika
+      await signOut(auth); showAuth(); $("err").textContent="Akaunti haijakamilika. Jisajili upya."; return;
+    }
+    me = {uid:u.uid,...s.data()};
+    $("loading").classList.add("hide");$("auth").classList.add("hide");$("app").classList.remove("hide");
+    unsubs.push(onSnapshot(doc(db,"families",me.familyId), s => { fam={id:s.id,...s.data()}; renderFamily(); },
+      x => toast(msg(x))));
+    listen("tasks"); listen("announcements");
+  }catch(x){ $("loading").textContent = msg(x); $("loading").classList.remove("hide"); }
+}
+
+/* ---------- Dashboard ---------- */
+function renderFamily(){
+  if(!fam||!me) return;
+  $("famTitle").textContent = fam.name;
+  const h=new Date().getHours(), g = h<12?"Habari za asubuhi":h<17?"Habari za mchana":"Habari za jioni";
+  $("hello").textContent = `${g}, ${me.name.split(" ")[0]} (${roleName(me.role)})`;
+  const full = fam.members.length>=2;
+  $("inviteBox").classList.toggle("hide", full);
+  $("inviteCode").textContent = fam.inviteCode;
+  const row = (n,r) => `<div class="item"><div class="t"><b></b><div class="mut">${r}</div></div><span class="pill ${n?"":"wait"}">${n?"Amejiunga":"Anasubiriwa"}</span></div>`;
+  const box = $("members"); box.innerHTML = row(fam.husbandName,"MUME")+row(fam.wifeName,"MKE");
+  box.querySelectorAll("b").forEach((b,i)=>b.textContent = (i?fam.wifeName:fam.husbandName) || "—");
+}
+$("copy").onclick = async () => { try{await navigator.clipboard.writeText(fam.inviteCode);toast("Code imenakiliwa")}catch{toast("Bonyeza code kwa muda uinakili")} };
+
+const tick = () => $("clock").textContent = new Date().toLocaleString("sw-TZ",{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
+tick(); setInterval(tick,30000);
+
+/* ---------- Real-time lists (tasks, announcements) ---------- */
+const colRef = c => collection(db,"families",me.familyId,c);
+function listen(c){
+  unsubs.push(onSnapshot(query(colRef(c),orderBy("createdAt","desc"),limit(50)), snap => {
+    const box = $("list-"+c); box.innerHTML = "";
+    if(snap.empty){ box.innerHTML = `<div class="empty">${c==="tasks"?"Hakuna majukumu bado. Ongeza la kwanza.":"Hakuna matangazo bado."}</div>`; return; }
+    snap.forEach(d => {
+      const x = d.data(), el = document.createElement("div");
+      el.className = "item" + (x.done?" done":"");
+      const when = x.createdAt ? x.createdAt.toDate().toLocaleString("sw-TZ",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "inatuma…";
+      if(c==="tasks"){ const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!x.done; cb.style.width="auto";
+        cb.setAttribute("aria-label","Imekamilika"); cb.onchange=()=>updateDoc(d.ref,{done:cb.checked}).catch(e=>toast(msg(e))); el.append(cb); }
+      const t = document.createElement("div"); t.className="t";
+      const b = document.createElement("div"); b.textContent = x.text;
+      const m = document.createElement("div"); m.className="mut"; m.textContent = `${x.byName} · ${when}`;
+      t.append(b,m); el.append(t);
+      const del = document.createElement("button"); del.className="x"; del.textContent="✕"; del.setAttribute("aria-label","Futa");
+      del.onclick = async () => { if(await confirmDlg("Futa kipengele hiki?")) deleteDoc(d.ref).catch(e=>toast(msg(e))); };
+      el.append(del); box.append(el);
+    });
+  }, x => toast(msg(x))));
+}
+document.querySelectorAll("form[data-add]").forEach(f => f.onsubmit = async e => {
+  e.preventDefault();
+  const inp = f.querySelector("input"), text = inp.value.trim(); if(!text) return;
+  inp.value = "";
+  try{ await addDoc(colRef(f.dataset.add),{text,done:false,by:me.uid,byName:me.name,createdAt:serverTimestamp()}); }
+  catch(x){ inp.value = text; toast(msg(x)); }
+});
+</script>
+</body>
+</html>
