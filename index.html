@@ -64,8 +64,8 @@ dialog::backdrop{background:#0008}
   <form id="authForm" class="card" autocomplete="on">
     <div id="fName" class="hide"><label for="name">Jina kamili</label><input id="name" autocomplete="name"></div>
     <div id="fPhone" class="hide"><label for="phone">Namba ya simu</label><input id="phone" type="tel" autocomplete="tel"></div>
-    <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
-    <label for="pass">Password (angalau herufi 6)</label><input id="pass" type="password" autocomplete="current-password" required minlength="6">
+    <div id="fCred"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
+    <label for="pass">Password (angalau herufi 6)</label><input id="pass" type="password" autocomplete="current-password" required minlength="6"></div>
     <div id="fRole" class="hide"><label for="role">Nafasi yako</label>
       <select id="role"><option value="mume">MUME</option><option value="mke">MKE</option></select></div>
     <div id="fFam" class="hide"><label for="famName">Jina la familia</label><input id="famName" placeholder="Mfano: Familia ya Mushi"></div>
@@ -73,6 +73,7 @@ dialog::backdrop{background:#0008}
     <div id="err" class="err" role="alert"></div>
     <button id="go" class="btn" type="submit">Ingia</button>
   </form>
+  <button id="cOut" class="ghost hide" type="button" style="margin-top:12px">Toka (tumia akaunti nyingine)</button>
   <p class="mut" style="margin-top:14px"><a href="#" id="forgot" style="color:var(--pri)">Nimesahau password</a></p>
 </main>
 
@@ -140,7 +141,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
 const $ = id => document.getElementById(id);
-let mode = "login", me = null, fam = null, unsubs = [], busy = false;
+let pending = null, mode = "login", me = null, fam = null, unsubs = [], busy = false;
 
 const errs = {
   "auth/email-already-in-use":"Email hii tayari imesajiliwa. Tumia \"Ingia\".",
@@ -175,6 +176,8 @@ function setMode(m){
   $("fFam").classList.toggle("hide",m!=="new");
   $("fCode").classList.toggle("hide",m!=="join");
   $("name").required=$("phone").required=reg; $("famName").required=m==="new"; $("code").required=m==="join";
+  $("fCred").classList.toggle("hide",!!pending); $("email").required=$("pass").required=!pending;
+  $("tLogin").classList.toggle("hide",!!pending); $("cOut").classList.toggle("hide",!pending);
   $("pass").autocomplete = reg ? "new-password" : "current-password";
   $("go").textContent = {login:"Ingia",new:"Fungua familia",join:"Jiunge na familia"}[m];
 }
@@ -192,21 +195,24 @@ const genCode = () => {const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=crypto.getRa
 $("authForm").onsubmit = async e => {
   e.preventDefault(); if(busy) return;
   busy = true; $("go").disabled = true; $("err").textContent = "";
-  const email=$("email").value.trim(), pass=$("pass").value;
+  const email = pending ? pending.email : $("email").value.trim(), pass=$("pass").value;
+  let ok = false;
   try{
-    if(mode==="login"){ await signInWithEmailAndPassword(auth,email,pass); }
+    if(mode==="login"){ await signInWithEmailAndPassword(auth,email,pass); ok = true; }
     else{
       const p = {name:$("name").value.trim(), phone:$("phone").value.trim(), role:$("role").value};
-      const cred = await createUserWithEmailAndPassword(auth,email,pass);
+      const cred = pending ? {user:pending} : await createUserWithEmailAndPassword(auth,email,pass);
       try{
         if(mode==="new") await createFamily(cred.user,p,email,$("famName").value.trim());
         else await joinFamily(cred.user,p,email,$("code").value.trim().toUpperCase());
-      }catch(x){ await cred.user.delete().catch(()=>{}); throw x; }
+        ok = true;
+      }catch(x){ if(!pending) await cred.user.delete().catch(()=>{}); throw x; }
     }
   }catch(x){ $("err").textContent = msg(x); }
   busy = false; $("go").disabled = false;
-  if(auth.currentUser) boot(auth.currentUser);
+  if(ok && auth.currentUser){ pending = null; boot(auth.currentUser); }
 };
+$("cOut").onclick = () => signOut(auth);
 
 async function createFamily(u,p,email,famName){
   const fref = doc(collection(db,"families")), code = genCode(), b = writeBatch(db);
@@ -215,7 +221,7 @@ async function createFamily(u,p,email,famName){
   f[p.role==="mume"?"husbandName":"wifeName"] = p.name;
   b.set(fref,f);
   b.set(doc(db,"invites",code),{familyId:fref.id,createdBy:u.uid,creatorRole:p.role,used:false,createdAt:serverTimestamp()});
-  b.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:fref.id,createdAt:serverTimestamp()});
+  b.set(doc(db,"fhUsers",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:fref.id,createdAt:serverTimestamp()});
   await b.commit();
 }
 
@@ -232,7 +238,7 @@ async function joinFamily(u,p,email,code){
     const f = fs.data(), k = p.role==="mume"?"husband":"wife";
     tx.update(fref,{members:[...f.members,u.uid],[k+"Uid"]:u.uid,[k+"Name"]:p.name});
     tx.update(iref,{used:true,usedBy:u.uid});
-    tx.set(doc(db,"users",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:i.familyId,createdAt:serverTimestamp()});
+    tx.set(doc(db,"fhUsers",u.uid),{name:p.name,phone:p.phone,email,role:p.role,familyId:i.familyId,createdAt:serverTimestamp()});
   });
 }
 
@@ -241,15 +247,19 @@ onAuthStateChanged(auth, u => { if(busy) return; u ? boot(u) : showAuth(); });
 $("logout").onclick = async () => { if(await confirmDlg("Unataka kutoka?")) signOut(auth); };
 
 function clearSubs(){unsubs.forEach(f=>f());unsubs=[];me=fam=null}
-function showAuth(){clearSubs();$("loading").classList.add("hide");$("app").classList.add("hide");$("auth").classList.remove("hide");setMode("login")}
+function showAuth(){clearSubs();pending=null;$("loading").classList.add("hide");$("app").classList.add("hide");$("auth").classList.remove("hide");setMode("login")}
 
+function showComplete(){
+  clearSubs(); pending = auth.currentUser;
+  $("loading").classList.add("hide"); $("app").classList.add("hide"); $("auth").classList.remove("hide");
+  setMode("new");
+  $("err").textContent = "Akaunti yako ipo tayari. Kamilisha Family Hub: fungua familia mpya au tumia code ya mwenza.";
+}
 async function boot(u){
   clearSubs();
   try{
-    const s = await getDoc(doc(db,"users",u.uid));
-    if(!s.exists()){ // usajili haukukamilika
-      await signOut(auth); showAuth(); $("err").textContent="Akaunti haijakamilika. Jisajili upya."; return;
-    }
+    const s = await getDoc(doc(db,"fhUsers",u.uid));
+    if(!s.exists() || !s.data().familyId){ showComplete(); return; }
     me = {uid:u.uid,...s.data()};
     $("loading").classList.add("hide");$("auth").classList.add("hide");$("app").classList.remove("hide");
     unsubs.push(onSnapshot(doc(db,"families",me.familyId), s => { fam={id:s.id,...s.data()}; renderFamily(); },
