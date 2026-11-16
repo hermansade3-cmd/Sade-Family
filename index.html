@@ -282,6 +282,7 @@ async function boot(u){
       await signOut(auth); showAuth(); $("err").textContent="Akaunti haijakamilika. Jisajili upya."; return;
     }
     me = {uid:u.uid,...s.data()};
+    if(!me.familyId){ await signOut(auth); showAuth(); $("err").textContent="Akaunti hii haina familia (usajili haukukamilika). Jisajili upya kwa email mpya, au futa user huyu kwenye Firebase Authentication kisha ujisajili tena."; return; }
     $("loading").classList.add("hide");$("auth").classList.add("hide");$("app").classList.remove("hide");
     unsubs.push(onSnapshot(doc(db,"families",me.familyId), s => { fam={id:s.id,...s.data()}; renderFamily(); },
       x => toast(msg(x))));
