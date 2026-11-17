@@ -1,0 +1,20 @@
+// Ongeza ndani ya: match /databases/{database}/documents { ... }
+// Kama rules zako za sasa tayari zinaruhusu wanachama wa familia kusoma/kuandika
+// subcollection yoyote chini ya families/{fid}/, HUHITAJI kuongeza chochote.
+
+function isMember(fid){
+  return request.auth != null &&
+    request.auth.uid in get(/databases/$(database)/documents/families/$(fid)).data.members;
+}
+
+// Collections mpya: recipes, fbud, fexp, fshop, freq, fprefs, fcom, fcarry, flog
+match /families/{fid}/{col}/{id} {
+  allow read: if isMember(fid) &&
+    col in ['recipes','fbud','fexp','fshop','freq','fprefs','fcom','fcarry','flog'];
+  allow create, update: if isMember(fid) &&
+    col in ['recipes','fbud','fexp','fshop','freq','fprefs','fcom','fcarry','flog'] &&
+    (!('amount' in request.resource.data) ||
+      (request.resource.data.amount is number && request.resource.data.amount >= 0));
+  allow delete: if isMember(fid) &&
+    col in ['recipes','fbud','fexp','fshop','freq','fprefs','fcom','fcarry'];  // flog haifutwi
+}
